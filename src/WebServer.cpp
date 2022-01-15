@@ -8,7 +8,7 @@
 #define TIME_TO_SLEEP 60          /* Time ESP32 will go to sleep (in seconds) */
 
 #define LED_BUILTIN 33
-#define BLINK_FREQUENCY 3
+#define BLINK_FREQUENCY 10
 #define BLINK_DELAY_TIME 1000 / BLINK_FREQUENCY / 2
 
 RTC_DATA_ATTR int bootCount = 0;
@@ -24,7 +24,7 @@ void turn_led_off();
 
 void blinkLED(uint8_t pin, uint8_t blinkCount, uint32_t delayTime = BLINK_DELAY_TIME)
 {
-  Serial.printf("Blinking LED %d times in %d seconds\n", blinkCount, blinkCount / BLINK_FREQUENCY);
+  Serial.printf("Blinking LED %d times in %.2f seconds\n", blinkCount, blinkCount / (float)BLINK_FREQUENCY);
   for (size_t i = 0; i < blinkCount; i++)
   {
     // digitalWrite(LED_BUILTIN, LOW); // ON | Inverted logic
@@ -91,7 +91,7 @@ void setup()
     }
   }
 
-  blinkLED(LED_BUILTIN, 10, 250);
+  blinkLED(LED_BUILTIN, 5);
   Serial.println("Going to sleep now");
   Serial.flush();
   esp_deep_sleep_start();
