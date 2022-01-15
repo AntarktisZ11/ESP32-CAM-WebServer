@@ -25,15 +25,17 @@ static int8_t local_variable_1 = 0;
 static int8_t local_variable_2 = 0;
 static int8_t local_variable_3 = 0;
 
+void setStayAwakeTime(uint16_t time);
+
 static bool led_on = false;
 
-static void turn_led_on()
+void turn_led_on()
 {
     digitalWrite(LED_BUILTIN, LOW); // Inverted logic
     led_on = true;
 }
 
-static void turn_led_off()
+void turn_led_off()
 {
     digitalWrite(LED_BUILTIN, HIGH); // Inverted logic
     led_on = false;
@@ -70,6 +72,7 @@ static esp_err_t cmd_handler(httpd_req_t *req)
         }
         if (httpd_req_get_url_query_str(req, buf, buf_len) == ESP_OK)
         {
+            res = 0;
             if (httpd_query_key_value(buf, "var", variable, sizeof(variable)) == ESP_OK &&
                 httpd_query_key_value(buf, "val", value, sizeof(value)) == ESP_OK)
             {
@@ -78,17 +81,25 @@ static esp_err_t cmd_handler(httpd_req_t *req)
             else if (!strcmp(buf, "led_toggle"))
             {
                 led_toggle();
-                res = 0;
             }
             else if (!strcmp(buf, "led_on"))
             {
                 turn_led_on();
-                res = 0;
             }
             else if (!strcmp(buf, "led_off"))
             {
                 turn_led_off();
-                res = 0;
+            }
+            else if (!strcmp(buf, "stay_awake"))
+            {
+                setStayAwakeTime(120);
+                Serial.println("Timer reset");
+            }
+            else if (!strcmp(buf, "sleep"))
+            {
+                Serial.println("Going to sleep now");
+                Serial.flush();
+                esp_deep_sleep_start();
             }
 
             else
@@ -150,7 +161,7 @@ static esp_err_t status_handler(httpd_req_t *req)
     p += sprintf(p, "\"local_variable_3\":%u", local_variable_3);
     p += sprintf(p, "\"led_on\":%u", led_on);
     *p++ = '}';
-    *p++ = 0;
+    *p++ = 0; // NULL byte to signify EOL
 
     httpd_resp_set_type(req, "application/json");
     httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");

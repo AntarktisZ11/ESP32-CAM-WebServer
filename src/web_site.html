@@ -97,12 +97,17 @@
                         <button id="LedToggleButton">Toggle On-Board LED</button>
                         <button id="LedOnButton">LED On</button>
                         <button id="LedOffButton">LED Off</button>
+                        <button id="StayAwakeButton">Stay Awake</button>
+                        <button id="SleepButton">Sleep</button>
                     </section>
                 </nav>
             </div>
         </div>
     </section>
     <script>
+        const INITIAL_AWAKE_TIME = 15
+        const STAY_AWAKE_TIME = 120
+        const SLEEP_TIME = 60
         document.addEventListener('DOMContentLoaded', function (event) {
             var baseHost = document.location.origin
 
@@ -110,6 +115,8 @@
             LedToggleButton.onclick = () => { sendCommand(`${baseHost}/control?led_toggle`) }
             LedOnButton.onclick = () => { sendCommand(`${baseHost}/control?led_on`) }
             LedOffButton.onclick = () => { sendCommand(`${baseHost}/control?led_off`) }
+            StayAwakeButton.onclick = () => { sendCommand(`${baseHost}/control?stay_awake`); if (awake) { countdownTimer(STAY_AWAKE_TIME); } }
+            SleepButton.onclick = () => { sendCommand(`${baseHost}/control?sleep`) }
 
 
             function sendCommand(query) {
@@ -118,6 +125,30 @@
                         console.log(`request to ${query} finished, status: ${response.status}`)
                     })
 
+            }
+            var deadline
+            var awake = true
+            function countdownTimer(startTime) {
+                if (deadline) {
+                    deadline = new Date().getTime() + startTime * 1000;
+                }
+                else {
+                    deadline = new Date().getTime() + startTime * 1000;
+                    var x = setInterval(function () {
+                        var now = new Date().getTime();
+                        var t = deadline - now;
+                        var minutes = Math.floor((t % (1000 * 60 * 60)) / (1000 * 60));
+                        var seconds = Math.floor((t % (1000 * 60)) / 1000);
+                        if (t < 0) {
+                            awake = !awake
+                            if (awake) { countdownTimer(INITIAL_AWAKE_TIME) }
+                            else { countdownTimer(SLEEP_TIME) }
+                        } else {
+                            if (awake) { document.getElementById("StayAwakeButton").innerHTML = "Stays Awake for " + minutes + "m " + seconds + "s. " + "Reset"; }
+                            else { document.getElementById("StayAwakeButton").innerHTML = "Sleeping for " + minutes + "m " + seconds + "s"; }
+                        }
+                    }, 1000);
+                }
             }
 
         })
