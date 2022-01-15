@@ -107,7 +107,8 @@
     <script>
         const INITIAL_AWAKE_TIME = 15
         const STAY_AWAKE_TIME = 120
-        const SLEEP_TIME = 60
+        const BOOT_TIME = 3
+        const SLEEP_TIME = BOOT_TIME + 60
         document.addEventListener('DOMContentLoaded', function (event) {
             var baseHost = document.location.origin
 
@@ -116,7 +117,7 @@
             LedOnButton.onclick = () => { sendCommand(`${baseHost}/control?led_on`) }
             LedOffButton.onclick = () => { sendCommand(`${baseHost}/control?led_off`) }
             StayAwakeButton.onclick = () => { sendCommand(`${baseHost}/control?stay_awake`); if (awake) { countdownTimer(STAY_AWAKE_TIME); } }
-            SleepButton.onclick = () => { sendCommand(`${baseHost}/control?sleep`) }
+            SleepButton.onclick = () => { sendCommand(`${baseHost}/control?sleep`); if (awake) { awake = false; countdownTimer(SLEEP_TIME); } }
 
 
             function sendCommand(query) {
