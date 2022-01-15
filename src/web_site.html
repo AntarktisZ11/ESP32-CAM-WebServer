@@ -1,0 +1,128 @@
+<!doctype html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>ESP32 WebServer</title>
+    <style>
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            background: #181818;
+            color: #EFEFEF;
+            font-size: 16px
+        }
+
+        h2 {
+            font-size: 18px
+        }
+
+        section.main {
+            display: flex
+        }
+
+        #menu,
+        section.main {
+            flex-direction: column
+        }
+
+        #menu {
+            display: none;
+            flex-wrap: nowrap;
+            min-width: 340px;
+            background: #363636;
+            padding: 8px;
+            border-radius: 4px;
+            margin-top: -10px;
+            margin-right: 10px;
+        }
+
+        section#buttons {
+            display: flex;
+            flex-wrap: nowrap;
+            justify-content: space-between
+        }
+
+        #nav-toggle {
+            cursor: pointer;
+            display: block
+        }
+
+        #nav-toggle-cb {
+            outline: 0;
+            opacity: 0;
+            width: 0;
+            height: 0
+        }
+
+        #nav-toggle-cb:checked+#menu {
+            display: flex
+        }
+
+        button {
+            display: block;
+            margin: 5px;
+            padding: 0 12px;
+            border: 0;
+            line-height: 28px;
+            cursor: pointer;
+            color: #fff;
+            background: #ff1317;
+            border-radius: 5px;
+            font-size: 16px;
+            outline: 0
+        }
+
+        button:hover {
+            background: #ff494d
+        }
+
+        button:active {
+            background: #f21c21
+        }
+    </style>
+
+</head>
+
+<body>
+    <section class="main">
+        <div id="logo">
+            <label for="nav-toggle-cb" id="nav-toggle">&#9776;&nbsp;&nbsp;Toggle ESP32 settings</label>
+        </div>
+        <div id="content">
+            <div id="sidebar">
+                <input type="checkbox" id="nav-toggle-cb" checked="checked">
+                <nav id="menu">
+                    <section id="buttons">
+                        <button id="LedToggleButton">Toggle On-Board LED</button>
+                        <button id="LedOnButton">LED On</button>
+                        <button id="LedOffButton">LED Off</button>
+                    </section>
+                </nav>
+            </div>
+        </div>
+    </section>
+    <script>
+        document.addEventListener('DOMContentLoaded', function (event) {
+            var baseHost = document.location.origin
+
+            // Attach actions to buttons
+            LedToggleButton.onclick = () => { sendCommand(`${baseHost}/control?led_toggle`) }
+            LedOnButton.onclick = () => { sendCommand(`${baseHost}/control?led_on`) }
+            LedOffButton.onclick = () => { sendCommand(`${baseHost}/control?led_off`) }
+
+
+            function sendCommand(query) {
+                fetch(query)
+                    .then(response => {
+                        console.log(`request to ${query} finished, status: ${response.status}`)
+                    })
+
+            }
+
+        })
+
+    </script>
+</body>
+
+</html>
