@@ -1,5 +1,7 @@
 #include "Arduino.h"
 #include <WiFi.h>
+#include <PubSubClient.h>
+#include "time.h"
 
 #define CAMERA_MODEL_AI_THINKER // Has PSRAM
 
@@ -13,18 +15,34 @@
 
 RTC_DATA_ATTR int bootCount = 0;
 
+// Network
 const char *ssid = "NETGEAR46";
 const char *password = "shinybox345";
+const char *mqtt_server = "pi.home";
+
+// Current time
+const char *ntpServer = "pool.ntp.org";
+const long gmtOffset_sec = 3600; // GMT+1h for Sweden
+const int daylightOffset_sec = 3600;
 
 uint16_t stayAwakeTime;
+
+// MQTT
+WiFiClient espClient;
+PubSubClient client(espClient);
 
 void startWebServer();
 void turn_led_on();
 void turn_led_off();
 
+void setStayAwakeTime(uint16_t time)
+{
+  stayAwakeTime = time;
+}
+
 void blinkLED(uint8_t pin, uint8_t blinkCount, uint32_t delayTime = BLINK_DELAY_TIME)
 {
-  Serial.printf("Blinking LED %d times in %.2f seconds\n", blinkCount, blinkCount / (float)BLINK_FREQUENCY);
+  Serial.printf("Blinking LED %d times in %.2f seconds\n", blinkCount, blinkCount * delayTime * 2 / 1000.0);
   for (size_t i = 0; i < blinkCount; i++)
   {
     // digitalWrite(LED_BUILTIN, LOW); // ON | Inverted logic
@@ -55,9 +73,113 @@ void setupWiFi()
   Serial.println("' to connect");
 }
 
-void setStayAwakeTime(uint16_t time)
+void mqttCallback(char *topic, byte *message, unsigned int length)
 {
-  stayAwakeTime = time;
+  Serial.print("Message arrived on topic: ");
+  Serial.print(topic);
+  Serial.print(". Message: ");
+  String messageTemp;
+
+  for (int i = 0; i < length; i++)
+  {
+    Serial.print((char)message[i]);
+    messageTemp += (char)message[i];
+  }
+  Serial.println();
+
+  // Feel free to add more if statements to control more GPIOs with MQTT
+
+  // If a message is received on the topic ESP-Cam/in, you check if the message is either "fast" or "slow".
+  // Changes the output state according to the message
+  if (String(topic) == "ESP-Cam/in")
+  {
+    if (messageTemp == "fast")
+      blinkLED(LED_BUILTIN, 10);
+
+    else if (messageTemp == "slow")
+      blinkLED(LED_BUILTIN, 10, 250);
+
+    else if (messageTemp.startsWith("stay awake"))
+    {
+      if (messageTemp.startsWith("stay awake:"))
+      {
+        String numberString = messageTemp.substring(11, messageTemp.length());
+        int newTime = numberString.toInt();
+        Serial.println(newTime);
+        if (newTime > 0)
+          setStayAwakeTime(newTime);
+      }
+      else
+        setStayAwakeTime(30);
+    }
+
+    else if (messageTemp == "sleep")
+      esp_deep_sleep_start();
+
+    else
+    {
+      char msgReply[60];
+      if (messageTemp.length() > 35)
+      {
+        messageTemp = messageTemp.substring(0, 30) + "[...]";
+      }
+      sprintf(msgReply, "Unknown command '%s'", messageTemp.c_str());
+      client.publish("ESP-Cam/out", msgReply); // awake: 01/15/22 18:32:28
+    }
+  }
+}
+
+void mqttReconnect()
+{
+  // Loop until we're reconnected
+  while (!client.connected())
+  {
+    Serial.print("Attempting MQTT connection...");
+    // Create a client ID using the MAC address
+    String clientId = "ESP32Client-";
+    clientId += String(WiFi.macAddress());
+    // Attempt to connect
+    if (client.connect(clientId.c_str()))
+    {
+      Serial.println("connected");
+      // Once connected, publish an announcement...
+      struct tm timeinfo;
+      char currentTime[30];
+
+      configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
+      getLocalTime(&timeinfo);
+      strftime(currentTime, 20, "%x %X", &timeinfo);
+      String awakeMsg = "awake: ";
+      awakeMsg += String(currentTime);
+
+      client.publish("ESP-Cam/out", awakeMsg.c_str()); // awake: 01/15/22 18:32:28
+      // ... and resubscribe
+      client.subscribe("ESP-Cam/in");
+    }
+    else
+    {
+      Serial.print("failed, rc=");
+      Serial.print(client.state());
+      Serial.println(" try again in 1 second");
+      // Wait 1 second before retrying
+      delay(1000);
+    }
+  }
+}
+
+void mqttSetup()
+{
+  client.setServer(mqtt_server, 1883);
+  client.setCallback(mqttCallback);
+}
+
+void mqttLoop()
+{
+  if (!client.connected())
+  {
+    mqttReconnect();
+  }
+  client.loop();
 }
 
 void setup()
@@ -70,8 +192,7 @@ void setup()
   Serial.println("Boot number: " + String(bootCount));
 
   esp_sleep_enable_timer_wakeup(TIME_TO_SLEEP * uS_TO_S_FACTOR);
-  Serial.println("Setup ESP32 to sleep for " + String(TIME_TO_SLEEP) +
-                 " Seconds");
+  Serial.println("Setup ESP32 to sleep for " + String(TIME_TO_SLEEP) + " Seconds");
 
   pinMode(LED_BUILTIN, OUTPUT);
   digitalWrite(LED_BUILTIN, HIGH); // Inverted logic; keep it off at start
@@ -79,10 +200,14 @@ void setup()
   setupWiFi();
 
   Serial.printf("Will stay awake for %d seconds\n", INITIAL_AWAKE_TIME);
-
   stayAwakeTime = INITIAL_AWAKE_TIME; // Stay awake INITIAL_AWAKE_TIME seconds
+
+  mqttSetup();
+
   while (stayAwakeTime)
   {
+    mqttLoop();
+
     delay(1000);
     stayAwakeTime--;
     if (stayAwakeTime % 10 == 0)
@@ -95,7 +220,6 @@ void setup()
   Serial.println("Going to sleep now");
   Serial.flush();
   esp_deep_sleep_start();
-  Serial.println("This will never be printed");
 }
 
 void loop()
