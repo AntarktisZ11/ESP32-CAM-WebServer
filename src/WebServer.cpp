@@ -276,6 +276,7 @@ void setup()
   {
     mqttLoop();
 
+    // Replace simple delay with timeStart + awakeTime < timeNow
     delay(1000);
     stayAwakeTime--;
     if (stayAwakeTime % 10 == 0)
