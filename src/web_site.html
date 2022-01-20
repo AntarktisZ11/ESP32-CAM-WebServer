@@ -652,6 +652,7 @@
                         .forEach(el => {
                             updateValue(el, state[el.id], false)
                         })
+                    countdownTimer(state["stay_awake_time"])
                 })
 
             const view = document.getElementById('stream')
@@ -735,13 +736,23 @@
             LedToggleButton.onclick = () => { sendCommand(`${baseHost}/control?led_toggle`) }
             LedOnButton.onclick = () => { sendCommand(`${baseHost}/control?led_on`) }
             LedOffButton.onclick = () => { sendCommand(`${baseHost}/control?led_off`) }
-            StayAwakeButton.onclick = () => { sendCommand(`${baseHost}/control?stay_awake`); if (awake) { countdownTimer(STAY_AWAKE_TIME); } }
+            StayAwakeButton.onclick = () => { sendCommand(`${baseHost}/control?stay_awake`); if (awake) { refreshCountdownTimer(); } }
             SleepButton.onclick = () => { sendCommand(`${baseHost}/control?sleep`); if (awake) { awake = false; countdownTimer(SLEEP_TIME); } }
 
             function sendCommand(query) {
                 fetch(query)
                     .then(response => {
                         console.log(`request to ${query} finished, status: ${response.status}`)
+                    })
+            }
+
+            function refreshCountdownTimer() {
+                fetch(`${baseHost}/status`)
+                    .then(function (response) {
+                        return response.json()
+                    })
+                    .then(function (state) {
+                        countdownTimer(state["stay_awake_time"])
                     })
             }
 
@@ -758,6 +769,10 @@
                         var t = deadline - now;
                         var minutes = Math.floor((t % (1000 * 60 * 60)) / (1000 * 60));
                         var seconds = Math.floor((t % (1000 * 60)) / 1000);
+
+                        if (awake && (seconds % 10) <= 1) {
+                            refreshCountdownTimer()
+                        }
                         if (t < 0) {
                             awake = !awake
                             if (awake) { countdownTimer(INITIAL_AWAKE_TIME) }
