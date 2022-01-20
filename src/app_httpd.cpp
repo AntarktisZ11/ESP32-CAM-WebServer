@@ -168,11 +168,6 @@ static esp_err_t stream_handler(httpd_req_t *req)
     size_t _jpg_buf_len = 0;
     uint8_t *_jpg_buf = NULL;
     char *part_buf[64];
-    int64_t fr_start = 0;
-    int64_t fr_ready = 0;
-    int64_t fr_face = 0;
-    int64_t fr_recognize = 0;
-    int64_t fr_encode = 0;
 
     static int64_t last_frame = 0;
     if (!last_frame)
@@ -198,11 +193,6 @@ static esp_err_t stream_handler(httpd_req_t *req)
         }
         else
         {
-            fr_start = esp_timer_get_time();
-            fr_ready = fr_start;
-            fr_face = fr_start;
-            fr_encode = fr_start;
-            fr_recognize = fr_start;
             if (fb->format != PIXFORMAT_JPEG)
             {
                 bool jpeg_converted = frame2jpg(fb, 80, &_jpg_buf, &_jpg_buf_len);
@@ -438,7 +428,7 @@ static esp_err_t status_handler(httpd_req_t *req)
     p += sprintf(p, "\"hmirror\":%u,", s->status.hmirror);
     p += sprintf(p, "\"dcw\":%u,", s->status.dcw);
     p += sprintf(p, "\"colorbar\":%u,", s->status.colorbar);
-    p += sprintf(p, "\"led_on\":%u", led_on);
+    p += sprintf(p, "\"led_on\":%u,", led_on);
     p += sprintf(p, "\"stay_awake_time\":%u", getStayAwakeTime());
     *p++ = '}';
     *p++ = 0; // NULL byte to signify EOL
