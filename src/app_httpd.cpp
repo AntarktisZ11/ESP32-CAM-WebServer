@@ -19,13 +19,13 @@
 #include "Arduino.h"
 
 #include "web_site.h"
+#include "common_setup.h"
 
 // Remove until it breaks
 // #include "fb_gfx.h"
 // #include "fd_forward.h"
 // #include "fr_forward.h"
 
-#define LED_BUILTIN 33
 typedef struct
 {
     size_t size;  //number of values used for filtering
@@ -52,8 +52,6 @@ httpd_handle_t main_httpd = NULL;
 
 void setStayAwakeTime(uint16_t time);
 uint16_t getStayAwakeTime();
-
-static bool led_on = false;
 
 // 'ra' probably means 'runtime average'
 static ra_filter_t *ra_filter_init(ra_filter_t *filter, size_t sample_size)
@@ -89,25 +87,6 @@ static int ra_filter_run(ra_filter_t *filter, int value)
     return filter->sum / filter->count;
 }
 
-void turn_led_on()
-{
-    digitalWrite(LED_BUILTIN, LOW); // Inverted logic
-    led_on = true;
-}
-
-void turn_led_off()
-{
-    digitalWrite(LED_BUILTIN, HIGH); // Inverted logic
-    led_on = false;
-}
-
-static void led_toggle()
-{
-    // If LED was on; turn it off, vice versa
-    led_on ? turn_led_off() : turn_led_on();
-    // {{condition}} ? {{do if true}} : {{do if false}};
-}
-
 static size_t jpg_encode_stream(void *arg, size_t index, const void *data, size_t len)
 {
     jpg_chunking_t *j = (jpg_chunking_t *)arg;
@@ -129,7 +108,6 @@ static esp_err_t capture_handler(httpd_req_t *req)
     esp_err_t res = ESP_OK;
     int64_t fr_start = esp_timer_get_time();
 
-    Serial.println(ESP.getFreeHeap());
     fb = esp_camera_fb_get();
     if (!fb)
     {
@@ -283,15 +261,24 @@ static esp_err_t cmd_handler(httpd_req_t *req)
             }
             else if (!strcmp(buf, "led_toggle"))
             {
-                led_toggle();
+                ledBuiltIn.toggle();
             }
             else if (!strcmp(buf, "led_on"))
             {
-                turn_led_on();
+                ledBuiltIn.on();
             }
             else if (!strcmp(buf, "led_off"))
             {
-                turn_led_off();
+                ledBuiltIn.off();
+            }
+            else if (!strcmp(buf, "flash_toggle"))
+            {
+                flashlight.toggle();
+            }
+            else if (!strcmp(buf, "restart"))
+            {
+                ESP.restart(); // tells the SDK to reboot vs 'ESP.reset()' which is a hard reset and can
+                               // leave some of the registers in the old state which can lead to problems.
             }
             else if (!strcmp(buf, "stay_awake"))
             {
@@ -428,7 +415,7 @@ static esp_err_t status_handler(httpd_req_t *req)
     p += sprintf(p, "\"hmirror\":%u,", s->status.hmirror);
     p += sprintf(p, "\"dcw\":%u,", s->status.dcw);
     p += sprintf(p, "\"colorbar\":%u,", s->status.colorbar);
-    p += sprintf(p, "\"led_on\":%u,", led_on);
+    p += sprintf(p, "\"led_on\":%u,", ledBuiltIn.status());
     p += sprintf(p, "\"stay_awake_time\":%u", getStayAwakeTime());
     *p++ = '}';
     *p++ = 0; // NULL byte to signify EOL
