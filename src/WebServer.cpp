@@ -3,9 +3,26 @@
 
 #define uS_TO_S_FACTOR 1000000ULL /* Conversion factor for micro seconds to seconds */
 #define INITIAL_AWAKE_TIME 15     /* Time ESP32 will stay awake for (in seconds) */
-#define TIME_TO_SLEEP 60          /* Time ESP32 will go to sleep (in seconds) */
+#define TIME_TO_SLEEP 60 * 5      /* Time ESP32 will go to sleep (in seconds) */
 
 RTC_DATA_ATTR int bootCount = 0;
+RTC_DATA_ATTR uint16_t sleepTime = TIME_TO_SLEEP;
+
+int setSleepTime(uint16_t time)
+{
+  if (time > 60 * 15)
+    return 0;
+
+  sleepTime = time;
+  esp_sleep_enable_timer_wakeup(sleepTime * uS_TO_S_FACTOR);
+  Serial.printf("Sleep duration now changed to %u\n", sleepTime);
+  return 1;
+}
+
+uint16_t getSleepTime()
+{
+  return sleepTime;
+}
 
 void setup()
 {
@@ -16,8 +33,9 @@ void setup()
   ++bootCount;
   Serial.println("Boot number: " + String(bootCount));
 
-  esp_sleep_enable_timer_wakeup(TIME_TO_SLEEP * uS_TO_S_FACTOR);
-  Serial.println("Setup ESP32 to sleep for " + String(TIME_TO_SLEEP) + " Seconds");
+  // sleepTime += bootCount * 5;
+  esp_sleep_enable_timer_wakeup(sleepTime * uS_TO_S_FACTOR);
+  Serial.println("Setup ESP32 to sleep for " + String(sleepTime) + " Seconds");
 
   setupCamera();
 

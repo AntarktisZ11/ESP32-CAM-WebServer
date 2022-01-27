@@ -12,6 +12,11 @@
 #define BLINK_FREQUENCY 10
 #define BLINK_DELAY_TIME 1000 / BLINK_FREQUENCY / 2
 
+// ! Should be moved away from WebServer.cpp
+// Deep-sleep time (WebServer.cpp)
+int setSleepTime(uint16_t time);
+uint16_t getSleepTime();
+
 // OTA (ota.cpp)
 void setupOTA();
 void handleOTA();

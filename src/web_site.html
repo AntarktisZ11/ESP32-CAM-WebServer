@@ -557,7 +557,8 @@
         const INITIAL_AWAKE_TIME = 15
         const STAY_AWAKE_TIME = 120
         const BOOT_TIME = 3
-        const SLEEP_TIME = BOOT_TIME + 60
+        const INITIAL_SLEEP_TIME = BOOT_TIME + 60
+        var sleep_time = INITIAL_SLEEP_TIME
 
         document.addEventListener('DOMContentLoaded', function (event) {
             var baseHost = document.location.origin
@@ -743,7 +744,7 @@
             FlashlightToggleButton.onclick = () => { sendCommand(`${baseHost}/control?flash_toggle`) }
             RestartButton.onclick = () => { sendCommand(`${baseHost}/control?restart`) }
             StayAwakeButton.onclick = () => { sendCommand(`${baseHost}/control?stay_awake`); if (awake) { refreshCountdownTimer(); } }
-            SleepButton.onclick = () => { sendCommand(`${baseHost}/control?sleep`); if (awake) { awake = false; countdownTimer(SLEEP_TIME); } }
+            SleepButton.onclick = () => { sendCommand(`${baseHost}/control?sleep`); if (awake) { awake = false; countdownTimer(sleep_time); } }
 
             function sendCommand(query) {
                 fetch(query)
@@ -759,6 +760,7 @@
                     })
                     .then(function (state) {
                         countdownTimer(state["stay_awake_time"])
+                        sleep_time = state["sleep_time"]
                     })
             }
 
@@ -777,13 +779,13 @@
                         var minutes = Math.floor((t % (1000 * 60 * 60)) / (1000 * 60));
                         var seconds = Math.floor((t % (1000 * 60)) / 1000);
 
-                        if (awake && (seconds % 10) <= 2) {
+                        if (awake && (seconds % 10) <= 1.5) {
                             refreshCountdownTimer()
                         }
                         if (t < 0) {
                             awake = !awake
                             if (awake) { countdownTimer(INITIAL_AWAKE_TIME) }
-                            else { countdownTimer(SLEEP_TIME) }
+                            else { countdownTimer(sleep_time) }
                         }
                         else {
                             if (hours > 0) {
