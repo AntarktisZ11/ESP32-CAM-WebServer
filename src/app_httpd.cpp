@@ -350,6 +350,20 @@ static esp_err_t cmd_handler(httpd_req_t *req)
                 Serial.flush();
                 esp_deep_sleep_start();
             }
+            else if (!strcmp(buf, "batt"))
+            {
+                static char json_response[32];
+
+                char *p = json_response;
+                *p++ = '{';
+                p += sprintf(p, "\"battery_level\":%u", getBatteryLevel());
+                *p++ = '}';
+                *p++ = 0; // NULL byte to signify EOL
+
+                httpd_resp_set_type(req, "application/json");
+                httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
+                return httpd_resp_send(req, json_response, strlen(json_response));
+            }
 
             else
             {

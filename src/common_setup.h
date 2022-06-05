@@ -53,9 +53,15 @@ public:
 static Led ledBuiltIn(LED_BUILTIN, true);
 static Led flashlight(LED_FLASHLIGHT);
 
-// Make Timer class
+// Make Timer class (extra.cpp)
 extern uint16_t stayAwakeTime;
 void setStayAwakeTime(uint16_t time);
 uint16_t getStayAwakeTime();
+
+// Battery level (extra.cpp)
+// Measurement has to be done before WiFi is used due to ADC1 being used
+void measureBatteryLevel();
+// Returns the battery level that was at start-up
+uint16_t getBatteryLevel();
 
 #endif
