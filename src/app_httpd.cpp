@@ -28,11 +28,11 @@
 
 typedef struct
 {
-    size_t size;  //number of values used for filtering
-    size_t index; //current value index
-    size_t count; //value count
+    size_t size;  // number of values used for filtering
+    size_t index; // current value index
+    size_t count; // value count
     int sum;
-    int *values; //array to be filled with values
+    int *values; // array to be filled with values
 } ra_filter_t;
 
 typedef struct
@@ -265,7 +265,7 @@ static esp_err_t cmd_handler(httpd_req_t *req)
 
                 if (!strcmp(variable, "sleep_time"))
                 {
-                    if (!setSleepTime(val))
+                    if (setSleepTime(val) != ESP_OK)
                     {
                         free(buf);
                         httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST, "Too large sleep time requested");
