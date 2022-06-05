@@ -10,13 +10,14 @@ RTC_DATA_ATTR uint16_t sleepTime = TIME_TO_SLEEP;
 
 int setSleepTime(uint16_t time)
 {
+  // The return values should be switched, a normal exit is '0'
   if (time > 60 * 15)
-    return 0;
+    return 1;
 
   sleepTime = time;
   esp_sleep_enable_timer_wakeup(sleepTime * uS_TO_S_FACTOR);
   Serial.printf("Sleep duration now changed to %u\n", sleepTime);
-  return 1;
+  return 0;
 }
 
 uint16_t getSleepTime()
@@ -74,5 +75,5 @@ void setup()
 
 void loop()
 {
-  //This is not going to be called
+  // This is not going to be called
 }
