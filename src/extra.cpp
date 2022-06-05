@@ -72,3 +72,29 @@ uint16_t getStayAwakeTime()
 {
     return stayAwakeTime;
 }
+
+/*
+
+    Battery level
+
+*/
+uint16_t batteryLevel;
+void measureBatteryLevel()
+{
+    uint8_t switch_pin = 13;
+    uint8_t adc_pin = 14;
+
+    pinMode(switch_pin, OUTPUT);
+    pinMode(adc_pin, INPUT);
+
+    digitalWrite(switch_pin, HIGH);
+    delay(1000);
+    batteryLevel = analogRead(adc_pin);
+    delay(1000);
+    digitalWrite(switch_pin, LOW);
+}
+
+uint16_t getBatteryLevel()
+{
+    return batteryLevel;
+}
