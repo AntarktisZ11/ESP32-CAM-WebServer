@@ -1,0 +1,4 @@
+(sym_lib_table
+  (lib (name "ESP32-CAM")(type "KiCad")(uri "${KIPRJMOD}/library/symbols/ESP32-CAM.kicad_sym")(options "")(descr ""))
+  (lib (name "TP4056-Module")(type "KiCad")(uri "${KIPRJMOD}/library/symbols/TP4056-Module.kicad_sym")(options "")(descr ""))
+)
