@@ -1,0 +1,3 @@
+[submodule "pcb/library"]
+	path = pcb/library
+	url = https://github.com/AntarktisZ11/kicad-library.git

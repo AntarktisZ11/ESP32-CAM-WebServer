@@ -1,0 +1,5 @@
+(fp_lib_table
+  (lib (name "ESP32CAM")(type "KiCad")(uri "${KIPRJMOD}/library/footprints/ESP32CAM.pretty")(options "")(descr ""))
+  (lib (name "TP4056-Module")(type "KiCad")(uri "${KIPRJMOD}/library/footprints/TP4056-Module.pretty")(options "")(descr ""))
+  (lib (name "EG1270")(type "KiCad")(uri "${KIPRJMOD}/library/footprints/EG1270.pretty")(options "")(descr ""))
+)
