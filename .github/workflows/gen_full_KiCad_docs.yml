@@ -36,6 +36,8 @@ jobs:
     steps:
       # Check out the files
       - uses: actions/checkout@v3
+        with:
+          submodules: true
 
       # Run KiBot to generate schematic documentation.
       - name: Generate schematic documentation
