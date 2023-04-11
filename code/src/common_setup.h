@@ -3,8 +3,8 @@
 
 #include <WiFi.h>
 
-#define SSID "***REMOVED***"
-#define PASSWORD "***REMOVED***"
+#define SSID "**REMOVED**"
+#define PASSWORD "**REMOVED**"
 #define MQTT_SERVER "pi.home"
 
 #define LED_BUILTIN 33
