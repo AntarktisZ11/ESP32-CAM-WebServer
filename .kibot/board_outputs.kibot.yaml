@@ -9,9 +9,32 @@ global:
 
 outputs:
   - name: "print_board"
-    comment: "PDF - print board"
+    comment: "PDF - print board (Top and Bottom layers)"
     type: pcb_print
     dir: Board
+    options:
+      - pages:
+          - sheet: Front
+            layers:
+              - layer: Edge.Cuts
+              - layer: F.Cu
+              - layer: F.Mask
+              - layer: F.Paste
+              - layer: F.SilkS
+              - layer: F.Fab
+                plot_footprint_refs: false
+                plot_footprint_values: false
+              - layer: Dwgs.User
+          - sheet: Back
+            mirror: true
+            layers:
+              - layer: B.Fab
+              - layer: Edge.Cuts
+              - layer: B.SilkS
+              - layer: B.Paste
+              - layer: B.Cu
+              - layer: B.Mask
+              - layer: Dwgs.User
 
   - name: "step_file_of_board"
     comment: "STEP - CAD file of the assembled board"
