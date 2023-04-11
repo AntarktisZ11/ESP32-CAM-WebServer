@@ -1,0 +1,31 @@
+# This script is called by the .github/workflows/release.yml workflow to generate documentation
+# (PDFs, interactive BOMs, board images) and fabrication files for JLCPCB and PCBWay.
+kibot:
+  version: 1
+
+global:
+  # Sets the default output filename for all generated files. You likely don't have to change this.
+  output: "%f-%i.%x"
+
+outputs:
+  - name: "print_board"
+    comment: "PDF - print board"
+    type: pcb_print
+    dir: Board
+
+  - name: "step_file_of_board"
+    comment: "STEP - CAD file of the assembled board"
+    type: step
+    dir: 3D-Models
+
+  - name: "3d_render"
+    comment: "IMAGE - 3D-rendered image of the assembled board"
+    type: render_3d
+    dir: 3D-Models
+
+  - name: "ibom"
+    comment: "BOM - Interactive HTML BoM"
+    type: ibom
+    dir: BoM
+    options:
+      dark_mode: true

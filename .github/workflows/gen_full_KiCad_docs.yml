@@ -6,7 +6,7 @@
 
 # To use this workflow in your own repo you need to edit the environment variables in the env: section
 # below.
-name: "KiBot - Generate Schematic Outputs"
+name: "KiBot - Generate KiCad Documentation"
 
 on:
   workflow_dispatch:
@@ -37,11 +37,20 @@ jobs:
       # Check out the files
       - uses: actions/checkout@v3
 
-      # Actually run KiBot to generate all the files.
+      # Run KiBot to generate schematic documentation.
       - name: Generate schematic documentation
         uses: INTI-CMNB/KiBot@v2_k6
         with:
           config: .kibot/schematic_outputs.kibot.yaml
+          dir: ${{ env.OutputFolder }}
+          schema: pcb/${{ env.BaseFileName }}.kicad_sch
+          board: pcb/${{ env.BaseFileName }}.kicad_pcb
+
+      # Run KiBot to generate board documentation.
+      - name: Generate board documentation
+        uses: INTI-CMNB/KiBot@v2_k6
+        with:
+          config: .kibot/board_outputs.kibot.yaml
           dir: ${{ env.OutputFolder }}
           schema: pcb/${{ env.BaseFileName }}.kicad_sch
           board: pcb/${{ env.BaseFileName }}.kicad_pcb
