@@ -41,8 +41,8 @@ class Led
     bool led_on_;
 
 public:
-    Led(uint8_t pin);
-    Led(uint8_t pin, bool invertedOutput);
+    explicit Led(uint8_t pin);
+    explicit Led(uint8_t pin, bool invertedOutput);
     bool status();
     void off();
     void on();
