@@ -1,6 +1,8 @@
 name: PlatformIO CI
 
 on:
+  workflow_dispatch:
+
   push:
     paths:
       - "code/**"
@@ -26,4 +28,4 @@ jobs:
         run: pip install --upgrade platformio
 
       - name: Build PlatformIO Project
-        run: pio run --environment serial
+        run: pio run --project-dir code --environment serial
