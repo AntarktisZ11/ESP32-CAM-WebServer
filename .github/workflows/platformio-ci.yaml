@@ -1,6 +1,11 @@
 name: PlatformIO CI
 
-on: [push]
+on:
+  push:
+    paths:
+      - "code/**"
+      - "!code/**/README*"
+      - "!code/.gitignore"
 
 jobs:
   build:
