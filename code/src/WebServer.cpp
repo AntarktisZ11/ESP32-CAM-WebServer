@@ -5,13 +5,15 @@
 #define INITIAL_AWAKE_TIME 15     /* Time ESP32 will stay awake for (in seconds) */
 #define TIME_TO_SLEEP 15          /* Time ESP32 will go to sleep (in seconds) */
 
+#define TIME_TO_SLEEP_MAX 60 * 15 /* Maximum allowed time for ESP32 to sleep (in seconds) */
+
 RTC_DATA_ATTR int bootCount = 0;
 RTC_DATA_ATTR uint16_t sleepTime = TIME_TO_SLEEP;
 
 int setSleepTime(uint16_t time)
 {
-  // The return values should be switched, a normal exit is '0'
-  if (time > 60 * 15)
+  // Sleep duration has to be limited to prevent accidental loss of service
+  if (time > TIME_TO_SLEEP_MAX)
     return 1;
 
   sleepTime = time;
